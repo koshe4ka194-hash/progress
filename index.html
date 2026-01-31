@@ -1,201 +1,141 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html>
 <head>
-<meta charset="UTF-8">
-<title>Progress Bulbs Editor</title>
-
-<style>
-body {
-  background:#111;
-  color:#fff;
-  font-family:Arial, sans-serif;
-  padding:20px;
-}
-.wrapper {
-  display:flex;
-  gap:20px;
-}
-.panel {
-  width:320px;
-  background:#1e1e1e;
-  padding:20px;
-  border-radius:12px;
-}
-.panel h2 {
-  margin-top:0;
-}
-.panel label {
-  font-size:13px;
-  display:block;
-  margin-top:12px;
-}
-.panel input {
-  width:100%;
-  padding:6px;
-  margin-top:4px;
-}
-.preview {
-  flex:1;
-  background:#000;
-  border:2px dashed #444;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-}
-textarea {
-  width:100%;
-  height:180px;
-  background:#000;
-  color:#0f0;
-  font-family:monospace;
-  font-size:11px;
-  margin-top:10px;
-}
-button {
-  width:100%;
-  margin-top:15px;
-  padding:12px;
-  background:#8c00ff;
-  border:none;
-  color:white;
-  font-weight:bold;
-  cursor:pointer;
-  border-radius:8px;
-}
-.color-list div {
-  display:flex;
-  gap:6px;
-  margin-top:6px;
-}
-</style>
+  <meta charset="utf-8">
+  <title>Редактор прогресс-бара для Genially</title>
+  <style>
+    body {
+      background: #111;
+      color: white;
+      font-family: sans-serif;
+      padding: 20px;
+    }
+    .editor-wrap {
+      display: flex;
+      gap: 20px;
+    }
+    .sidebar {
+      width: 300px;
+      background: #222;
+      padding: 20px;
+      border-radius: 10px;
+    }
+    input, select {
+      width: 100%;
+      margin-bottom: 15px;
+      padding: 8px;
+      box-sizing: border-box;
+      background: #000;
+      color: #0f0;
+      border: 1px solid #555;
+    }
+    button {
+      width: 100%;
+      padding: 12px;
+      background: #8c00ff;
+      border: none;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      margin-bottom: 10px;
+    }
+    #out {
+      width: 100%;
+      height: 150px;
+      background: #000;
+      color: #0f0;
+      font-family: monospace;
+      font-size: 12px;
+      resize: none;
+    }
+    .preview-zone {
+      flex-grow: 1;
+      border: 2px dashed #444;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.3);
+      min-height: 120px;
+    }
+  </style>
 </head>
-
 <body>
 
-<h1>🧪 Progress Bulbs Editor (Genially)</h1>
+<div class="editor-wrap">
+  <div class="sidebar">
+    <h3>Настройки прогресс-бара</h3>
+    <label>Папка с колбами (GitHub Pages):</label>
+    <input type="text" id="folder" value="https://koshe4ka194-hash.github.io/progress/bulbs/" oninput="gen()">
 
-<div class="wrapper">
+    <label>Пустая колба (имя файла):</label>
+    <input type="text" id="empty" value="16.png" oninput="gen()">
 
-  <div class="panel">
-    <h2>Настройки</h2>
+    <label>Заполненная колба (имя файла):</label>
+    <input type="text" id="full" value="17.png" oninput="gen()">
 
-    <label>Кол-во колб</label>
-    <input type="number" id="total" value="5" min="1" max="10">
+    <label>Количество колб:</label>
+    <input type="number" id="total" value="5" min="1" max="20" oninput="gen()">
 
-    <label>Заполнено</label>
-    <input type="number" id="filled" value="2" min="0">
+    <label>Заполнено колб:</label>
+    <input type="number" id="filled" value="2" min="0" max="20" oninput="gen()">
 
-    <label>Размер колб (px)</label>
-    <input type="number" id="size" value="40">
+    <label>Цвет рамки:</label>
+    <input type="color" id="borderColor" value="#8c00ff" oninput="gen()">
 
-    <label>Цвет рамки (неон)</label>
-    <input type="color" id="frameColor" value="#8c00ff">
-
-    <label>GitHub папка с колбами</label>
-    <input type="text" id="path"
-      value="https://raw.githubusercontent.com/koshe4ka194-hash/progress/main/bulbs/">
-
-    <label>Пустая колба</label>
-    <input type="text" id="emptyImg" value="bulb_empty.png">
-
-    <label>Заполненная колба</label>
-    <input type="text" id="fullImg" value="bulb_full.png">
-
-    <label>Цвета заполненных колб</label>
-    <div id="colors" class="color-list"></div>
-
-    <button onclick="generate()">Получить код</button>
-    <textarea id="output" readonly></textarea>
+    <button onclick="copyCode()">Получить код</button>
+    <textarea id="out" readonly></textarea>
   </div>
 
-  <div class="preview" id="preview"></div>
-
+  <div class="preview-zone" id="preview"></div>
 </div>
 
 <script>
-function updateColors() {
-  const filled = +document.getElementById('filled').value;
-  const box = document.getElementById('colors');
-  box.innerHTML = '';
-  for (let i = 0; i < filled; i++) {
-    box.innerHTML += `
-      <div>
-        <span>${i+1}</span>
-        <input type="color" value="#00ffcc">
-      </div>`;
-  }
-}
+function gen() {
+  const folder = document.getElementById('folder').value.trim();
+  const empty = document.getElementById('empty').value.trim();
+  const full = document.getElementById('full').value.trim();
+  const total = parseInt(document.getElementById('total').value);
+  let filled = parseInt(document.getElementById('filled').value);
+  const border = document.getElementById('borderColor').value;
 
-function generate() {
-  const total = +totalEl.value;
-  const filled = +filledEl.value;
-  const size = sizeEl.value;
-  const frame = frameColorEl.value;
-  const path = pathEl.value;
-  const empty = emptyImgEl.value;
-  const full = fullImgEl.value;
+  // Защита от ошибок
+  if(filled > total) filled = total;
+  if(filled < 0) filled = 0;
 
-  let bulbsHTML = '';
-  const colors = document.querySelectorAll('#colors input');
+  // Создаём HTML на основе <table> для Genially
+  let html = `<table cellpadding="0" cellspacing="0" border="0" style="background-color: rgba(0,0,0,0); border:3px solid ${border}; border-radius:40px; padding:12px 16px;">
+  <tr>
+    <td>`;
 
-  for (let i = 0; i < total; i++) {
-    if (i < filled) {
-      const c = colors[i]?.value || '#00ffcc';
-      bulbsHTML += `<img src="${path}${full}" width="${size}"
-      style="filter:drop-shadow(0 0 6px ${c});">`;
+  // Генерируем колбы
+  for(let i=0; i<total; i++){
+    if(i<filled){
+      html += `<img src="${folder}${full}" width="61" style="vertical-align: middle; margin-right:6px;">`;
     } else {
-      bulbsHTML += `<img src="${path}${empty}" width="${size}" style="opacity:0.4;">`;
+      html += `<img src="${folder}${empty}" width="61" style="opacity:0.4; vertical-align: middle; margin-right:6px;">`;
     }
   }
 
-  const final = `
-<div style="
-display:flex;
-align-items:center;
-gap:10px;
-padding:12px 16px;
-border:3px solid ${frame};
-border-radius:40px;
-box-shadow:0 0 20px ${frame};
-background:transparent;
-">
-<div style="display:flex; gap:6px;">
-${bulbsHTML}
-</div>
-<span style="
-margin-left:10px;
-font-size:20px;
-font-weight:bold;
-color:${frame};
-text-shadow:0 0 10px ${frame};
-">
-${filled} / ${total}
-</span>
-</div>
-`.trim();
+  html += `</td>
+    <td style="padding-left:10px; font-size:20px; font-weight:bold; color:${border}; text-shadow:0 0 10px ${border}; vertical-align: middle;">
+      ${filled} / ${total}
+    </td>
+  </tr>
+</table>`;
 
-  preview.innerHTML = final;
-  output.value = final;
+  document.getElementById('preview').innerHTML = html;
+  document.getElementById('out').value = html;
 }
 
-const totalEl = document.getElementById('total');
-const filledEl = document.getElementById('filled');
-const sizeEl = document.getElementById('size');
-const frameColorEl = document.getElementById('frameColor');
-const pathEl = document.getElementById('path');
-const emptyImgEl = document.getElementById('emptyImg');
-const fullImgEl = document.getElementById('fullImg');
+// Кнопка копирования кода
+function copyCode(){
+  const out = document.getElementById('out');
+  out.select();
+  document.execCommand('copy');
+  alert("Код скопирован!");
+}
 
-document.querySelectorAll('input').forEach(i =>
-  i.addEventListener('input', () => {
-    updateColors();
-    generate();
-  })
-);
-
-updateColors();
-generate();
+gen();
 </script>
-
 </body>
 </html>
