@@ -2,36 +2,48 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Genially Lab Progress Editor</title>
+    <title>Genially Lab Master Editor</title>
     <style>
         :root { --p: #00ff7b; }
-        body { font-family: 'Segoe UI', sans-serif; background: #121212; color: white; display: flex; height: 100vh; margin: 0; }
-        .settings { width: 350px; background: #1e1e1e; padding: 25px; border-right: 2px solid #333; box-shadow: 5px 0 20px rgba(0,0,0,0.5); }
+        body { font-family: 'Segoe UI', sans-serif; background: #121212; color: white; display: flex; height: 100vh; margin: 0; overflow: hidden; }
+        .settings { width: 360px; background: #1e1e1e; padding: 25px; border-right: 2px solid #333; box-shadow: 5px 0 20px rgba(0,0,0,0.5); overflow-y: auto; }
         .view { flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; background: radial-gradient(circle, #222, #000); position: relative; }
-        .view::after { content: "ПРЕДПРОСМОТР В GENIALLY"; position: absolute; bottom: 30px; color: #444; font-size: 12px; letter-spacing: 2px; }
-        input { width: 100%; margin: 10px 0 20px; padding: 10px; background: #2a2a2a; border: 1px solid #444; color: white; border-radius: 8px; box-sizing: border-box; }
-        .btn { width: 100%; padding: 15px; background: var(--p); border: none; border-radius: 8px; font-weight: bold; cursor: pointer; color: black; transition: 0.3s; }
+        input[type="number"], input[type="range"] { width: 100%; margin: 10px 0 20px; }
+        input[type="color"] { width: 100%; height: 40px; border: none; cursor: pointer; background: none; margin-bottom: 20px; }
+        .btn { width: 100%; padding: 15px; background: var(--p); border: none; border-radius: 8px; font-weight: bold; cursor: pointer; color: black; transition: 0.3s; text-transform: uppercase; }
         .btn:hover { background: #00cc62; transform: translateY(-2px); }
-        textarea { width: 100%; height: 150px; margin-top: 20px; background: #000; color: #0f0; border: 1px solid #333; font-family: monospace; font-size: 11px; padding: 10px; box-sizing: border-box; resize: none; }
-        label { font-size: 12px; color: #888; text-transform: uppercase; }
-        h3 { color: var(--p); margin-top: 0; text-align: center; }
+        textarea { width: 100%; height: 120px; margin-top: 20px; background: #000; color: #0f0; border: 1px solid #333; font-family: monospace; font-size: 11px; padding: 10px; box-sizing: border-box; resize: none; }
+        label { font-size: 12px; color: #888; text-transform: uppercase; font-weight: bold; }
+        h3 { color: var(--p); margin-top: 0; text-align: center; border-bottom: 1px solid #333; padding-bottom: 15px; }
+        .control-group { margin-bottom: 5px; }
     </style>
 </head>
 <body>
 
 <div class="settings">
-    <h3>🧪 КОНСТРУКТОР БАРА</h3>
+    <h3>🧪 НАСТРОЙКИ ВИДЖЕТА</h3>
     
-    <label>Текущий шаг (0-5):</label>
-    <input type="number" id="step" value="2" min="0" max="5" oninput="generate()">
+    <div class="control-group">
+        <label>Прогресс (0-5):</label>
+        <input type="number" id="step" value="2" min="0" max="5" oninput="generate()">
+    </div>
     
-    <label>Цвет неона:</label>
-    <input type="color" id="clr" value="#00ff7b" oninput="generate()">
+    <div class="control-group">
+        <label>Цвет неона:</label>
+        <input type="color" id="clr" value="#00ff7b" oninput="generate()">
+    </div>
     
-    <label>Размер колб (px):</label>
-    <input type="number" id="size" value="50" oninput="generate()">
+    <div class="control-group">
+        <label>Общий масштаб:</label>
+        <input type="range" id="scale" min="0.5" max="1.5" step="0.1" value="1" oninput="generate()">
+    </div>
 
-    <button class="btn" onclick="copy()">КОПИРОВАТЬ КОД ДЛЯ GENIALLY</button>
+    <div class="control-group" style="display:flex; align-items:center; gap:10px; margin-bottom:20px;">
+        <input type="checkbox" id="pulse" checked onchange="generate()" style="width:20px; margin:0;">
+        <label style="margin:0;">Пульсация колб</label>
+    </div>
+
+    <button class="btn" onclick="copy()">Копировать код</button>
     <textarea id="output" readonly></textarea>
 </div>
 
@@ -41,7 +53,8 @@
     function generate() {
         const v = document.getElementById('step').value;
         const c = document.getElementById('clr').value;
-        const s = document.getElementById('size').value;
+        const sc = document.getElementById('scale').value;
+        const isPulse = document.getElementById('pulse').checked;
         
         const imgFull = "https://raw.githubusercontent.com/koshe4ka194-hash/progress/main/bulbs/16.png";
         const imgEmpty = "https://raw.githubusercontent.com/koshe4ka194-hash/progress/main/bulbs/17.png";
@@ -50,36 +63,46 @@
         for(let i=1; i<=5; i++) {
             let isFull = i <= v;
             let currentImg = isFull ? imgFull : imgEmpty;
-            let opacity = isFull ? "1" : "0.3";
+            let className = (isFull && isPulse) ? "pulse" : "";
+            let opacity = isFull ? "1" : "0.2";
             let glow = isFull ? `filter: drop-shadow(0 0 10px ${c});` : "";
-            bulbsHtml += `<img src='${currentImg}' style='width:${s}px; height:auto; margin:0 5px; vertical-align:middle; opacity:${opacity}; ${glow}'>`;
+            
+            bulbsHtml += `<img src='${currentImg}' class='${className}' style='width:50px; height:auto; margin:0 5px; vertical-align:middle; opacity:${opacity}; ${glow}'>`;
         }
 
-        // Формируем внутренний HTML для iframe
         const innerDoc = `
 <!DOCTYPE html>
 <html>
 <head>
 <style>
-    body { margin: 0; padding: 20px; overflow: hidden; display: flex; justify-content: center; align-items: center; background: transparent; }
+    @keyframes neonPulse {
+        0% { filter: drop-shadow(0 0 5px ${c}); opacity: 0.8; }
+        50% { filter: drop-shadow(0 0 20px ${c}); opacity: 1; }
+        100% { filter: drop-shadow(0 0 5px ${c}); opacity: 0.8; }
+    }
+    body { margin: 0; padding: 0; overflow: hidden; display: flex; justify-content: center; align-items: center; background: transparent; height: 100vh; }
+    .main-scale { transform: scale(${sc}); transform-origin: center; }
     .wrap {
         display: inline-flex; align-items: center; padding: 12px 25px;
         background: rgba(0,0,0,0.85); border: 3px solid ${c}; border-radius: 60px;
         box-shadow: 0 0 20px ${c}, inset 0 0 10px ${c};
         font-family: Arial, sans-serif; white-space: nowrap;
     }
-    .counter { margin-left: 20px; font-size: ${s*0.6}px; font-weight: bold; color: ${c}; text-shadow: 0 0 10px ${c}; }
+    .pulse { animation: neonPulse 2s infinite ease-in-out; }
+    .counter { margin-left: 20px; font-size: 28px; font-weight: bold; color: ${c}; text-shadow: 0 0 10px ${c}; }
 </style>
 </head>
 <body>
-    <div class='wrap'>
-        <div style='display:flex; align-items:center;'>${bulbsHtml}</div>
-        <div class='counter'>${v} / 5</div>
+    <div class='main-scale'>
+        <div class='wrap'>
+            <div style='display:flex; align-items:center;'>${bulbsHtml}</div>
+            <div class='counter'>${v} / 5</div>
+        </div>
     </div>
 </body>
 </html>`.trim().replace(/\n/g, ' ');
 
-        const iframeCode = `<iframe srcdoc="${innerDoc.replace(/"/g, '&quot;')}" style="width: 100%; height: 180px; border: none; background: transparent;" scrolling="no"></iframe>`;
+        const iframeCode = `<iframe srcdoc="${innerDoc.replace(/"/g, '&quot;')}" style="width: 100%; height: 250px; border: none; background: transparent;" scrolling="no"></iframe>`;
 
         document.getElementById('pv').innerHTML = iframeCode;
         document.getElementById('output').value = iframeCode;
@@ -89,7 +112,7 @@
         const area = document.getElementById('output');
         area.select();
         document.execCommand('copy');
-        alert("Код скопирован! Теперь вставьте его в Genially через Insert -> Others.");
+        alert("Код скопирован!");
     }
     
     generate();
