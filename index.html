@@ -2,73 +2,81 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Genially Widget Fixer</title>
+    <title>Science Quiz Fixer</title>
     <style>
-        body { font-family: sans-serif; background: #1a1a1a; color: white; padding: 20px; display: flex; gap: 20px; }
-        .controls { width: 350px; background: #2a2a2a; padding: 20px; border-radius: 12px; }
-        .preview { flex-grow: 1; background: #000; border-radius: 12px; display: flex; align-items: center; justify-content: center; border: 2px solid #333; }
-        input { width: 100%; margin: 10px 0 20px; padding: 8px; box-sizing: border-box; }
-        textarea { width: 100%; height: 150px; background: #000; color: #0f0; font-family: monospace; padding: 10px; box-sizing: border-box; }
-        button { width: 100%; padding: 15px; background: #8c00ff; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
-        button:hover { background: #a64dff; }
+        body { font-family: 'Segoe UI', sans-serif; background: #1a1a1a; color: white; padding: 30px; display: flex; gap: 20px; }
+        .controls { width: 380px; background: #252525; padding: 25px; border-radius: 15px; border: 1px solid #333; }
+        .preview-box { flex-grow: 1; background: #000; border-radius: 15px; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 2px dashed #444; }
+        input, select { width: 100%; padding: 10px; margin: 10px 0 20px; background: #333; border: 1px solid #444; color: white; border-radius: 8px; }
+        textarea { width: 100%; height: 120px; background: #000; color: #00ff00; font-family: monospace; font-size: 11px; padding: 10px; border-radius: 5px; border: 1px solid #444; }
+        button { width: 100%; padding: 15px; background: #8000ff; color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; font-size: 16px; }
+        button:hover { background: #9d33ff; }
+        h3 { margin-top: 0; color: #8000ff; }
     </style>
 </head>
 <body>
 
 <div class="controls">
-    <h3>⚙️ Настройка виджета</h3>
-    <label>Имя файла (11.png):</label>
-    <input type="text" id="file" value="11.png" oninput="generate()">
+    <h3>🧪 Настройка квиза</h3>
     
-    <label>Цвет рамки:</label>
-    <input type="color" id="neon" value="#8c00ff" oninput="generate()">
+    <label>Имя файла (из GitHub):</label>
+    <input type="text" id="file" value="11.png" oninput="build()">
     
-    <label>Цвет прогресса:</label>
-    <input type="color" id="liquid" value="#ff00dd" oninput="generate()">
+    <label>Цвет неона (рамка):</label>
+    <input type="color" id="neon" value="#8000ff" oninput="build()">
     
-    <label>Прогресс (от 0 до 5):</label>
-    <input type="number" id="current" value="1" oninput="generate()">
+    <label>Цвет жидкости (прогресс):</label>
+    <input type="color" id="liquid" value="#00ff04" oninput="build()">
+    
+    <label>Выполнено (от 0 до 5):</label>
+    <input type="number" id="current" value="1" min="0" max="5" oninput="build()">
 
-    <button onclick="copyCode()">КОПИРОВАТЬ КОД</button>
+    <button onclick="copyCode()">КОПИРОВАТЬ КОД ДЛЯ GENIALLY</button>
     <textarea id="output" readonly></textarea>
 </div>
 
-<div class="preview" id="preview">
-    </div>
+<div class="preview-box">
+    <div id="display"></div>
+    <p style="color: #666; font-size: 12px; margin-top: 20px;">Предпросмотр виджета</p>
+</div>
 
 <script>
-    function generate() {
+    function build() {
         const file = document.getElementById('file').value;
         const neon = document.getElementById('neon').value;
         const liquid = document.getElementById('liquid').value;
-        const current = document.getElementById('current').value;
-        const percent = (current / 5) * 100;
+        const curr = document.getElementById('current').value;
+        const percent = (curr / 5) * 100;
 
-        const rawHtml = `
-<body style="margin:0; padding:0; background:transparent; display:flex; justify-content:center; align-items:center; height:100vh; overflow:hidden;">
-    <div style="display:flex; align-items:center; padding:12px 25px; border-radius:60px; border:3px solid ${neon}; box-shadow:0 0 15px ${neon}, inset 0 0 5px ${neon}; background:rgba(0,0,0,0.6); min-width:350px; font-family:sans-serif;">
-        <img src="https://raw.githubusercontent.com/koshe4ka194-hash/progress/main/${file}" style="height:50px; margin-right:15px; filter:drop-shadow(0 0 5px ${neon});">
-        <div style="flex-grow:1; height:22px; background:rgba(255,255,255,0.1); border-radius:11px; overflow:hidden; border:1px solid rgba(255,255,255,0.2); position:relative;">
-            <div style="width:${percent}%; height:100%; background:${liquid}; box-shadow:0 0 15px ${liquid}; transition:width 0.8s ease-out;"></div>
-        </div>
-        <div style="margin-left:20px; font-weight:bold; font-size:24px; color:${liquid}; text-shadow:0 0 8px ${liquid}; min-width:60px; text-align:right;">${current}/5</div>
+        // Чистый HTML виджета
+        const innerHTML = `
+<div style="display:flex; align-items:center; padding:12px 25px; border-radius:60px; border:3px solid ${neon}; box-shadow:0 0 15px ${neon}, inset 0 0 5px ${neon}; background:rgba(0,0,0,0.7); min-width:350px; font-family:sans-serif; box-sizing:border-box;">
+    <img src="https://raw.githubusercontent.com/koshe4ka194-hash/progress/main/${file}" style="height:50px; margin-right:15px; filter:drop-shadow(0 0 5px ${neon});">
+    <div style="flex-grow:1; height:20px; background:rgba(255,255,255,0.1); border-radius:10px; overflow:hidden; border:1px solid rgba(255,255,255,0.2); position:relative;">
+        <div style="width:${percent}%; height:100%; background:${liquid}; box-shadow:0 0 15px ${liquid}; transition:width 0.8s ease-out;"></div>
     </div>
-</body>`.trim();
+    <div style="margin-left:20px; font-weight:bold; font-size:24px; color:${liquid}; text-shadow:0 0 8px ${liquid}; min-width:60px; text-align:right;">${curr}/5</div>
+</div>`.trim();
 
-        const encodedHtml = btoa(unescape(encodeURIComponent(rawHtml)));
-        const iframeCode = `<iframe src="data:text/html;base64,${encodedHtml}" width="100%" height="150" frameborder="0" scrolling="no" style="background:transparent;"></iframe>`;
+        // Оборачиваем в базовый HTML документ
+        const fullDoc = `<!DOCTYPE html><html><body style="margin:0; padding:0; display:flex; justify-content:center; align-items:center; height:100vh; background:transparent; overflow:hidden;">${innerHTML}</body></html>`;
         
-        document.getElementById('output').value = iframeCode;
-        document.getElementById('preview').innerHTML = iframeCode;
+        // Кодируем в Base64 для обхода фильтров Genially
+        const base64 = btoa(unescape(encodeURIComponent(fullDoc)));
+        const finalIframe = `<iframe src="data:text/html;base64,${base64}" width="100%" height="150" frameborder="0" scrolling="no" style="background:transparent;"></iframe>`;
+        
+        document.getElementById('output').value = finalIframe;
+        document.getElementById('display').innerHTML = finalIframe;
     }
 
     function copyCode() {
-        document.getElementById('output').select();
+        const area = document.getElementById('output');
+        area.select();
         document.execCommand('copy');
-        alert("Код скопирован! Вставляйте в Genially.");
+        alert("Код скопирован! Теперь вставь его в Genially через Insert -> Others.");
     }
 
-    generate();
+    window.onload = build;
 </script>
 
 </body>
