@@ -1,71 +1,72 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>Genially Science Widget</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #1a1a1a; color: white; padding: 20px; display: flex; gap: 20px; }
-        .controls { width: 350px; background: #252525; padding: 20px; border-radius: 12px; border: 1px solid #333; }
-        .preview-area { flex-grow: 1; background: #000; border-radius: 12px; display: flex; align-items: center; justify-content: center; position: relative; border: 2px dashed #444; }
-        input, select { width: 100%; margin: 10px 0 20px; padding: 10px; background: #333; border: 1px solid #444; color: white; border-radius: 6px; box-sizing: border-box; }
-        textarea { width: 100%; height: 150px; background: #000; color: #0f0; font-family: monospace; padding: 10px; box-sizing: border-box; resize: none; border: 1px solid #444; }
-        button { width: 100%; padding: 15px; background: #8000ff; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
-        h3 { margin: 0 0 20px 0; color: #8000ff; }
+        body { background: #111; color: white; font-family: sans-serif; padding: 20px; }
+        .editor-wrap { display: flex; gap: 20px; }
+        .sidebar { width: 300px; background: #222; padding: 20px; border-radius: 10px; }
+        input { width: 100%; margin-bottom: 15px; padding: 8px; box-sizing: border-box; }
+        textarea { width: 100%; height: 150px; background: #000; color: #0f0; font-family: monospace; font-size: 11px; }
+        .preview-zone { flex-grow: 1; border: 2px dashed #444; display: flex; align-items: center; justify-content: center; background: #000; }
+        button { width: 100%; padding: 15px; background: #8c00ff; border: none; color: white; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
 
-<div class="controls">
-    <h3>🧪 Настройка бара</h3>
-    <label>Файл (напр. 11.png):</label>
-    <input type="text" id="file" value="11.png" oninput="draw()">
-    <label>Цвет неона:</label>
-    <input type="color" id="neon" value="#8000ff" oninput="draw()">
-    <label>Цвет прогресса:</label>
-    <input type="color" id="liquid" value="#00ff04" oninput="draw()">
-    <label>Прогресс (0-5):</label>
-    <input type="number" id="current" value="1" min="0" max="5" oninput="draw()">
-    
-    <button onclick="copyCode()">КОПИРОВАТЬ КОД</button>
-    <textarea id="output" readonly></textarea>
-</div>
-
-<div class="preview-area">
-    <div id="render"></div>
+<div class="editor-wrap">
+    <div class="sidebar">
+        <h3>Настройки</h3>
+        <label>Имя файла:</label>
+        <input type="text" id="f" value="11.png" oninput="gen()">
+        <label>Цвет неона:</label>
+        <input type="color" id="n" value="#8c00ff" oninput="gen()">
+        <label>Цвет полоски:</label>
+        <input type="color" id="l" value="#04ff00" oninput="gen()">
+        <label>Прогресс (0-5):</label>
+        <input type="number" id="c" value="1" oninput="gen()">
+        <button onclick="copy()">КОПИРОВАТЬ КОД</button>
+        <textarea id="out" readonly></textarea>
+    </div>
+    <div class="preview-zone" id="prev"></div>
 </div>
 
 <script>
-    function draw() {
-        const file = document.getElementById('file').value;
-        const neon = document.getElementById('neon').value;
-        const liquid = document.getElementById('liquid').value;
-        const curr = document.getElementById('current').value;
-        const percent = (curr / 5) * 100;
+    function gen() {
+        const file = document.getElementById('f').value;
+        const neon = document.getElementById('n').value;
+        const liq = document.getElementById('l').value;
+        const cur = document.getElementById('c').value;
+        const perc = (cur / 5) * 100;
 
-        // Формируем код. Добавляем margin 20px вокруг, чтобы не резало неон.
-        const code = `
-<div style="width: 450px; height: 120px; display: flex; justify-content: center; align-items: center; background: transparent; overflow: visible !important;">
-    <div style="display: flex; align-items: center; padding: 12px 25px; border-radius: 60px; border: 3px solid ${neon}; box-shadow: 0 0 20px ${neon}, inset 0 0 10px ${neon}; background: rgba(0,0,0,0.8); min-width: 380px; margin: 20px; box-sizing: border-box; font-family: Arial, sans-serif;">
-        <img src="https://raw.githubusercontent.com/koshe4ka194-hash/progress/main/${file}" style="height: 50px; width: auto; margin-right: 15px; filter: drop-shadow(0 0 8px ${neon}); display: block;">
-        <div style="flex-grow: 1; height: 22px; background: rgba(255,255,255,0.1); border-radius: 11px; overflow: hidden; border: 1px solid rgba(255,255,255,0.2); position: relative;">
-            <div style="width: ${percent}%; height: 100%; background: ${liquid}; box-shadow: 0 0 15px ${liquid}; transition: width 0.8s ease-out;"></div>
-        </div>
-        <div style="margin-left: 20px; font-weight: bold; font-size: 26px; color: ${liquid}; text-shadow: 0 0 10px ${liquid}; min-width: 65px; text-align: right;">${curr}/5</div>
-    </div>
-</div>`.trim();
+        // Код на таблицах - максимально консервативно для Genially
+        const final = `
+<table cellpadding="0" cellspacing="0" border="0" style="width: 420px; background: rgba(0,0,0,0.8); border: 3px solid ${neon}; border-radius: 50px; box-shadow: 0 0 20px ${neon};">
+  <tr>
+    <td style="padding: 10px 0 10px 20px; width: 60px;">
+      <img src="https://raw.githubusercontent.com/koshe4ka194-hash/progress/main/${file}" width="50" height="50" style="display: block; filter: drop-shadow(0 0 5px ${neon});">
+    </td>
+    <td style="padding: 0 15px;">
+      <div style="width: 200px; height: 20px; background: rgba(255,255,255,0.1); border-radius: 10px; border: 1px solid rgba(255,255,255,0.2); overflow: hidden;">
+        <div style="width: ${perc}%; height: 100%; background: ${liq}; box-shadow: 0 0 15px ${liq};"></div>
+      </div>
+    </td>
+    <td style="padding-right: 25px; text-align: right;">
+      <span style="font-family: Arial, sans-serif; font-weight: bold; font-size: 24px; color: ${liq}; text-shadow: 0 0 10px ${liq};">${cur}/5</span>
+    </td>
+  </tr>
+</table>`.trim();
 
-        document.getElementById('render').innerHTML = code;
-        document.getElementById('output').value = code;
+        document.getElementById('prev').innerHTML = final;
+        document.getElementById('out').value = final;
     }
-
-    function copyCode() {
-        const out = document.getElementById('output');
-        out.select();
+    
+    function copy() {
+        document.getElementById('out').select();
         document.execCommand('copy');
-        alert("Код скопирован! Вставляй в Genially.");
+        alert("Скопировано!");
     }
-
-    draw();
+    
+    gen();
 </script>
 </body>
 </html>
