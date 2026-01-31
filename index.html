@@ -1,70 +1,64 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <title>GitHub Progress Editor</title>
-    <style>
-        body { font-family: sans-serif; background: #1a1a1a; color: white; display: flex; padding: 20px; gap: 20px; }
-        .panel { width: 320px; background: #252525; padding: 20px; border-radius: 15px; }
-        .preview { flex-grow: 1; background: #000; border-radius: 15px; display: flex; align-items: center; justify-content: center; border: 2px dashed #444; }
-        input { width: 100%; margin: 10px 0 20px; padding: 8px; background: #333; border: 1px solid #444; color: white; }
-        textarea { width: 100%; height: 150px; background: #000; color: #0f0; font-family: monospace; font-size: 11px; }
-        button { width: 100%; padding: 15px; background: #00ff7b; border: none; cursor: pointer; font-weight: bold; }
-    </style>
-</head>
-<body>
-
-<div class="panel">
-    <h3>⚙️ Настройки GitHub</h3>
-    <label>Имя файла полной колбы:</label>
-    <input type="text" id="imgOn" value="11.png" oninput="gen()">
-    
-    <label>Имя файла пустой колбы:</label>
-    <input type="text" id="imgOff" value="17.png" oninput="gen()">
-    
-    <label>Прогресс (от 0 до 5):</label>
-    <input type="number" id="val" value="2" min="0" max="5" oninput="gen()">
-
-    <label>Цвет неона:</label>
-    <input type="color" id="clr" value="#00ff7b" oninput="gen()">
-
-    <button onclick="copy()">КОПИРОВАТЬ КОД</button>
-    <textarea id="res" readonly></textarea>
+<div id="progress-editor" style="display:flex;flex-direction:column;align-items:center;gap:14px;min-width:150px;max-width:96vw;margin-top:32px;">
+  <div id="progress-preview" style="display:flex;gap:6px;"></div>
+  
+  <div style="display:flex;flex-direction:column;gap:6px;width:200px;">
+    <label>Количество колб:<input type="number" id="pb-total" value="5" min="1" max="20"></label>
+    <label>Заполнено колб:<input type="number" id="pb-filled" value="2" min="0" max="20"></label>
+    <label>Размер колб (px):<input type="number" id="pb-size" value="60" min="20" max="200"></label>
+    <label>Цвет свечения:<input type="color" id="pb-color" value="#00ff7b"></label>
+    <label>Свечение:
+      <select id="pb-glow">
+        <option value="yes">Включено</option>
+        <option value="no">Выключено</option>
+      </select>
+    </label>
+    <button id="pb-copy" style="margin-top:10px;">Получить код</button>
+    <textarea id="pb-code" readonly style="height:100px;background:#111;color:#0f0;font-family:monospace;"></textarea>
+  </div>
 </div>
 
-<div class="preview" id="prev"></div>
-
 <script>
-    function gen() {
-        const on = document.getElementById('imgOn').value;
-        const off = document.getElementById('imgOff').value;
-        const val = document.getElementById('val').value;
-        const clr = document.getElementById('clr').value;
-        const baseURL = "https://raw.githubusercontent.com/koshe4ka194-hash/progress/main/";
+const fullImg = "https://i.postimg.cc/7hBpJVf9/11-(1).png";
+const emptyImg = "https://i.postimg.cc/xCQrw8wR/17.png";
 
-        let icons = "";
-        for(let i=1; i<=5; i++) {
-            let file = i <= val ? on : off;
-            let glow = i <= val ? `filter: drop-shadow(0 0 8px ${clr});` : `opacity: 0.4;`;
-            icons += `<img src="${baseURL}${file}" width="50" style="${glow} margin: 0 5px; display: inline-block;">`;
-        }
+function renderProgress() {
+  const total = parseInt(document.getElementById("pb-total").value);
+  let filled = parseInt(document.getElementById("pb-filled").value);
+  const size = parseInt(document.getElementById("pb-size").value);
+  const color = document.getElementById("pb-color").value;
+  const glow = document.getElementById("pb-glow").value === "yes";
 
-        const widget = `
-<div style="display: table; margin: 0 auto; padding: 15px 25px; background: rgba(0,0,0,0.8); border: 3px solid ${clr}; border-radius: 50px; box-shadow: 0 0 20px ${clr}; text-align: center;">
-    <div style="display: inline-block; vertical-align: middle;">${icons}</div>
-    <span style="display: inline-block; vertical-align: middle; margin-left: 20px; font-family: Arial, sans-serif; font-size: 24px; font-weight: bold; color: ${clr}; text-shadow: 0 0 10px ${clr};">${val} / 5</span>
-</div>`.trim();
+  if(filled>total) filled=total;
+  if(filled<0) filled=0;
 
-        document.getElementById('prev').innerHTML = widget;
-        document.getElementById('res').value = widget;
+  const preview = document.getElementById("progress-preview");
+  let html = "";
+
+  for(let i=0;i<total;i++){
+    if(i<filled){
+      html += `<img src="${fullImg}" width="${size}" style="margin-right:6px;${glow?'filter:drop-shadow(0 0 15px '+color+');':''}">`;
+    } else {
+      html += `<img src="${emptyImg}" width="${size}" style="margin-right:6px;">`;
     }
-    
-    function copy() {
-        document.getElementById('res').select();
-        document.execCommand('copy');
-        alert("Код скопирован!");
-    }
-    gen();
+  }
+
+  html += `<span style="font-size:20px;font-weight:bold;color:${color};text-shadow:0 0 10px ${color};margin-left:10px;vertical-align:middle;">${filled} / ${total}</span>`;
+  preview.innerHTML = html;
+  document.getElementById("pb-code").value = html;
+}
+
+// события
+document.getElementById("pb-total").oninput = renderProgress;
+document.getElementById("pb-filled").oninput = renderProgress;
+document.getElementById("pb-size").oninput = renderProgress;
+document.getElementById("pb-color").oninput = renderProgress;
+document.getElementById("pb-glow").onchange = renderProgress;
+document.getElementById("pb-copy").onclick = ()=>{
+  const ta = document.getElementById("pb-code");
+  ta.select();
+  document.execCommand("copy");
+  alert("Код скопирован! Вставляйте в Genially.");
+}
+
+renderProgress();
 </script>
-</body>
-</html>
