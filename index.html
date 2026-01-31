@@ -2,94 +2,73 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Genially Progress Bar Editor</title>
+    <title>Genially Widget Fixer</title>
     <style>
-        :root { --accent: #00d2ff; }
-        body { font-family: 'Segoe UI', sans-serif; background: #121212; color: white; margin: 0; display: flex; height: 100vh; }
-        .panel { width: 380px; background: #1e1e1e; padding: 25px; border-right: 1px solid #333; overflow-y: auto; box-shadow: 5px 0 15px rgba(0,0,0,0.5); }
-        .preview { flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; background: radial-gradient(circle, #2c2c2c 0%, #000 100%); position: relative; }
-        
-        h2 { color: var(--accent); font-size: 1.2rem; margin-top: 0; }
-        label { display: block; margin: 15px 0 5px; font-size: 0.85rem; color: #bbb; }
-        input, select { width: 100%; padding: 10px; background: #2a2a2a; border: 1px solid #444; color: white; border-radius: 6px; box-sizing: border-box; }
-        
-        .btn { background: var(--accent); color: black; border: none; padding: 15px; width: 100%; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 25px; transition: 0.3s; }
-        .btn:hover { background: #0099cc; transform: translateY(-2px); }
-        
-        #code-output { width: 100%; height: 120px; margin-top: 15px; background: #000; color: #0f0; border: 1px solid #444; font-family: monospace; font-size: 0.75rem; padding: 10px; box-sizing: border-box; resize: none; }
-        
-        /* Виджет в предпросмотре */
-        .widget-box { padding: 20px; display: flex; align-items: center; justify-content: center; }
+        body { font-family: sans-serif; background: #1a1a1a; color: white; padding: 20px; display: flex; gap: 20px; }
+        .controls { width: 350px; background: #2a2a2a; padding: 20px; border-radius: 12px; }
+        .preview { flex-grow: 1; background: #000; border-radius: 12px; display: flex; align-items: center; justify-content: center; border: 2px solid #333; }
+        input { width: 100%; margin: 10px 0 20px; padding: 8px; box-sizing: border-box; }
+        textarea { width: 100%; height: 150px; background: #000; color: #0f0; font-family: monospace; padding: 10px; box-sizing: border-box; }
+        button { width: 100%; padding: 15px; background: #8c00ff; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        button:hover { background: #a64dff; }
     </style>
 </head>
 <body>
 
-<div class="panel">
-    <h2>⚙️ Настройки виджета</h2>
+<div class="controls">
+    <h3>⚙️ Настройка виджета</h3>
+    <label>Имя файла (11.png):</label>
+    <input type="text" id="file" value="11.png" oninput="generate()">
     
-    <label>Имя файла на GitHub (например, 3.png)</label>
-    <input type="text" id="fileName" value="3.png" oninput="update()">
+    <label>Цвет рамки:</label>
+    <input type="color" id="neon" value="#8c00ff" oninput="generate()">
+    
+    <label>Цвет прогресса:</label>
+    <input type="color" id="liquid" value="#ff00dd" oninput="generate()">
+    
+    <label>Прогресс (от 0 до 5):</label>
+    <input type="number" id="current" value="1" oninput="generate()">
 
-    <label>Цвет неоновой рамки</label>
-    <input type="color" id="neonColor" value="#00ff00" oninput="update()">
-    
-    <label>Цвет прогресса (жидкости)</label>
-    <input type="color" id="liquidColor" value="#ccff00" oninput="update()">
-    
-    <label>Прогресс (сколько выполнено)</label>
-    <input type="number" id="current" value="2" min="0" oninput="update()">
-    
-    <label>Всего (цель)</label>
-    <input type="number" id="total" value="5" min="1" oninput="update()">
-
-    <button class="btn" onclick="copyCode()">СКОПИРОВАТЬ КОД ДЛЯ GENIALLY</button>
-    <textarea id="code-output" readonly></textarea>
+    <button onclick="copyCode()">КОПИРОВАТЬ КОД</button>
+    <textarea id="output" readonly></textarea>
 </div>
 
-<div class="preview" id="preview-container">
-    <div id="render-target"></div>
-    <p style="color: #555; margin-top: 40px;">Так виджет будет выглядеть в вашем квизе</p>
-</div>
+<div class="preview" id="preview">
+    </div>
 
 <script>
-    function update() {
-        const file = document.getElementById('fileName').value;
-        const neon = document.getElementById('neonColor').value;
-        const liquid = document.getElementById('liquidColor').value;
-        const curr = document.getElementById('current').value;
-        const total = document.getElementById('total').value;
-        const percent = Math.min((curr / total) * 100, 100);
+    function generate() {
+        const file = document.getElementById('file').value;
+        const neon = document.getElementById('neon').value;
+        const liquid = document.getElementById('liquid').value;
+        const current = document.getElementById('current').value;
+        const percent = (current / 5) * 100;
 
-        const imgUrl = `https://raw.githubusercontent.com/koshe4ka194-hash/progress/main/${file}`;
-
-        // Формируем HTML код виджета
-        const widgetHtml = `
-<div style="width: 100%; display: flex; justify-content: center; align-items: center; background: transparent; padding: 10px;">
-    <div style="display: flex; align-items: center; padding: 12px 25px; border-radius: 60px; border: 2px solid ${neon}; box-shadow: 0 0 15px ${neon}, inset 0 0 5px ${neon}; background: rgba(0,0,0,0.3); min-width: 320px;">
-        <img src="${imgUrl}" style="height: 50px; margin-right: 15px; filter: drop-shadow(0 0 5px ${neon});">
-        <div style="flex-grow: 1; height: 22px; background: rgba(255,255,255,0.1); border-radius: 11px; overflow: hidden; border: 1px solid rgba(255,255,255,0.2); position: relative;">
-            <div style="width: ${percent}%; height: 100%; background: ${liquid}; box-shadow: 0 0 15px ${liquid}; transition: width 0.8s ease-out; position: relative;">
-                <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(rgba(255,255,255,0.2) 0%, transparent 100%);"></div>
-            </div>
+        const rawHtml = `
+<body style="margin:0; padding:0; background:transparent; display:flex; justify-content:center; align-items:center; height:100vh; overflow:hidden;">
+    <div style="display:flex; align-items:center; padding:12px 25px; border-radius:60px; border:3px solid ${neon}; box-shadow:0 0 15px ${neon}, inset 0 0 5px ${neon}; background:rgba(0,0,0,0.6); min-width:350px; font-family:sans-serif;">
+        <img src="https://raw.githubusercontent.com/koshe4ka194-hash/progress/main/${file}" style="height:50px; margin-right:15px; filter:drop-shadow(0 0 5px ${neon});">
+        <div style="flex-grow:1; height:22px; background:rgba(255,255,255,0.1); border-radius:11px; overflow:hidden; border:1px solid rgba(255,255,255,0.2); position:relative;">
+            <div style="width:${percent}%; height:100%; background:${liquid}; box-shadow:0 0 15px ${liquid}; transition:width 0.8s ease-out;"></div>
         </div>
-        <div style="margin-left: 20px; font-family: 'Arial Black', sans-serif; font-size: 24px; color: ${liquid}; text-shadow: 0 0 8px ${liquid}; min-width: 60px; text-align: right;">${curr}/${total}</div>
+        <div style="margin-left:20px; font-weight:bold; font-size:24px; color:${liquid}; text-shadow:0 0 8px ${liquid}; min-width:60px; text-align:right;">${current}/5</div>
     </div>
-</div>`;
+</body>`.trim();
 
-        // Обновляем превью и поле с кодом
-        document.getElementById('render-target').innerHTML = widgetHtml;
-        document.getElementById('code-output').value = widgetHtml.trim();
+        const encodedHtml = btoa(unescape(encodeURIComponent(rawHtml)));
+        const iframeCode = `<iframe src="data:text/html;base64,${encodedHtml}" width="100%" height="150" frameborder="0" scrolling="no" style="background:transparent;"></iframe>`;
+        
+        document.getElementById('output').value = iframeCode;
+        document.getElementById('preview').innerHTML = iframeCode;
     }
 
     function copyCode() {
-        const copyText = document.getElementById("code-output");
-        copyText.select();
-        document.execCommand("copy");
-        alert("Код скопирован! Вставьте его в Genially (Insert -> Others)");
+        document.getElementById('output').select();
+        document.execCommand('copy');
+        alert("Код скопирован! Вставляйте в Genially.");
     }
 
-    // Инициализация при загрузке
-    window.onload = update;
+    generate();
 </script>
 
 </body>
