@@ -64,14 +64,6 @@
 <div class="editor-wrap">
   <div class="sidebar">
     <h3>Настройки прогресс-бара</h3>
-    <label>Папка с колбами (GitHub Pages):</label>
-    <input type="text" id="folder" value="https://koshe4ka194-hash.github.io/progress/bulbs/" oninput="gen()">
-
-    <label>Пустая колба (имя файла):</label>
-    <input type="text" id="empty" value="17.png" oninput="gen()">
-
-    <label>Заполненная колба (имя файла):</label>
-    <input type="text" id="full" value="16.png" oninput="gen()">
 
     <label>Количество колб:</label>
     <input type="number" id="total" value="5" min="1" max="20" oninput="gen()">
@@ -91,9 +83,6 @@
 
 <script>
 function gen() {
-  const folder = document.getElementById('folder').value.trim();
-  const empty = document.getElementById('empty').value.trim();
-  const full = document.getElementById('full').value.trim();
   const total = parseInt(document.getElementById('total').value);
   let filled = parseInt(document.getElementById('filled').value);
   const border = document.getElementById('borderColor').value;
@@ -101,20 +90,23 @@ function gen() {
   if(filled > total) filled = total;
   if(filled < 0) filled = 0;
 
-  // Генерация Genially-совместимого HTML через таблицу
+  // Ссылки на твои колбы
+  const full = "https://i.postimg.cc/7hBpJVf9/11-(1).png"; // заполненная
+  const empty = "https://i.postimg.cc/xCQrw8wR/17.png"; // пустая
+
+  // Генерация таблицы
   let html = `<table cellpadding="0" cellspacing="0" border="0" style="background-color: rgba(0,0,0,0); border:3px solid ${border}; border-radius:40px;">
 <tr>`;
 
-  // Генерируем каждую колбу в отдельной <td>
   for(let i=0;i<total;i++){
     if(i<filled){
-      html += `<td style="padding:0 6px 0 0;"><img src="${folder}${full}" width="61"></td>`;
+      html += `<td style="padding:0 6px 0 0;"><img src="${full}" width="61"></td>`;
     } else {
-      html += `<td style="padding:0 6px 0 0;"><img src="${folder}${empty}" width="61" style="opacity:0.4;"></td>`;
+      html += `<td style="padding:0 6px 0 0;"><img src="${empty}" width="61"></td>`;
     }
   }
 
-  // Добавляем текст с прогрессом
+  // Прогресс текст
   html += `<td style="padding-left:10px; font-size:20px; font-weight:bold; color:${border}; text-shadow:0 0 10px ${border};">
 ${filled} / ${total}</td>`;
 
