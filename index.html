@@ -108,13 +108,16 @@ function gen() {
     <td>`;
 
   // Генерируем колбы
-  for(let i=0; i<total; i++){
+ for(let i=0; i<total; i++){
     if(i<filled){
-      html += `<img src="${folder}${full}" width="61" style="vertical-align: middle; margin-right:6px;">`;
+        // Заполненная колба
+        html += `<img src="${folder}${full}" width="61" style="vertical-align: middle; margin-right:6px;">`;
     } else {
-      html += `<img src="${folder}${empty}" width="61" style="opacity:0.4; vertical-align: middle; margin-right:6px;">`;
+        // Пустая колба
+        html += `<img src="${folder}${empty}" width="61" style="opacity:0.4; vertical-align: middle; margin-right:6px;">`;
     }
-  }
+}
+
 
   html += `</td>
     <td style="padding-left:10px; font-size:20px; font-weight:bold; color:${border}; text-shadow:0 0 10px ${border}; vertical-align: middle;">
