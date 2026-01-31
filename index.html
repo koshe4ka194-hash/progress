@@ -1,89 +1,70 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
-<meta charset="utf-8">
-<title>Редактор прогресс-бара для Genially</title>
-<style>
-  body { background:#111; color:white; font-family:sans-serif; padding:20px; }
-  .editor-wrap { display:flex; gap:20px; }
-  .sidebar { width:300px; background:#222; padding:20px; border-radius:10px; }
-  input, select, label { width:100%; margin-bottom:10px; padding:6px; box-sizing:border-box; background:#000; color:#0f0; border:1px solid #555; }
-  button { width:100%; padding:12px; background:#8c00ff; border:none; color:white; font-weight:bold; cursor:pointer; margin-top:10px; }
-  #out { width:100%; height:150px; background:#000; color:#0f0; font-family:monospace; font-size:12px; resize:none; margin-top:10px; }
-  .preview-zone { flex-grow:1; border:2px dashed #444; display:flex; align-items:center; justify-content:flex-start; background:rgba(0,0,0,0.3); min-height:100px; padding:10px; flex-wrap:wrap; }
-</style>
+    <meta charset="UTF-8">
+    <title>GitHub Progress Editor</title>
+    <style>
+        body { font-family: sans-serif; background: #1a1a1a; color: white; display: flex; padding: 20px; gap: 20px; }
+        .panel { width: 320px; background: #252525; padding: 20px; border-radius: 15px; }
+        .preview { flex-grow: 1; background: #000; border-radius: 15px; display: flex; align-items: center; justify-content: center; border: 2px dashed #444; }
+        input { width: 100%; margin: 10px 0 20px; padding: 8px; background: #333; border: 1px solid #444; color: white; }
+        textarea { width: 100%; height: 150px; background: #000; color: #0f0; font-family: monospace; font-size: 11px; }
+        button { width: 100%; padding: 15px; background: #00ff7b; border: none; cursor: pointer; font-weight: bold; }
+    </style>
 </head>
 <body>
 
-<div class="editor-wrap">
-  <div class="sidebar">
-    <h3>Настройки прогресс-бара</h3>
+<div class="panel">
+    <h3>⚙️ Настройки GitHub</h3>
+    <label>Имя файла полной колбы:</label>
+    <input type="text" id="imgOn" value="11.png" oninput="gen()">
+    
+    <label>Имя файла пустой колбы:</label>
+    <input type="text" id="imgOff" value="17.png" oninput="gen()">
+    
+    <label>Прогресс (от 0 до 5):</label>
+    <input type="number" id="val" value="2" min="0" max="5" oninput="gen()">
 
-    <label>Количество колб:</label>
-    <input type="number" id="total" value="5" min="1" max="20" oninput="gen()">
+    <label>Цвет неона:</label>
+    <input type="color" id="clr" value="#00ff7b" oninput="gen()">
 
-    <label>Заполнено колб:</label>
-    <input type="number" id="filled" value="2" min="0" max="20" oninput="gen()">
-
-    <label>Размер колб (px):</label>
-    <input type="number" id="size" value="60" min="20" max="200" oninput="gen()">
-
-    <label>Цвет свечения:</label>
-    <input type="color" id="color" value="#00ff7b" oninput="gen()">
-
-    <label>Свечение:</label>
-    <select id="glow" onchange="gen()">
-      <option value="yes">Включено</option>
-      <option value="no">Выключено</option>
-    </select>
-
-    <button onclick="copyCode()">Получить код</button>
-    <textarea id="out" readonly></textarea>
-  </div>
-
-  <div class="preview-zone" id="preview"></div>
+    <button onclick="copy()">КОПИРОВАТЬ КОД</button>
+    <textarea id="res" readonly></textarea>
 </div>
 
+<div class="preview" id="prev"></div>
+
 <script>
-function gen() {
-  const total = parseInt(document.getElementById('total').value);
-  let filled = parseInt(document.getElementById('filled').value);
-  const size = parseInt(document.getElementById('size').value);
-  const color = document.getElementById('color').value;
-  const glow = document.getElementById('glow').value === 'yes';
+    function gen() {
+        const on = document.getElementById('imgOn').value;
+        const off = document.getElementById('imgOff').value;
+        const val = document.getElementById('val').value;
+        const clr = document.getElementById('clr').value;
+        const baseURL = "https://raw.githubusercontent.com/koshe4ka194-hash/progress/main/";
 
-  if(filled > total) filled = total;
-  if(filled < 0) filled = 0;
+        let icons = "";
+        for(let i=1; i<=5; i++) {
+            let file = i <= val ? on : off;
+            let glow = i <= val ? `filter: drop-shadow(0 0 8px ${clr});` : `opacity: 0.4;`;
+            icons += `<img src="${baseURL}${file}" width="50" style="${glow} margin: 0 5px; display: inline-block;">`;
+        }
 
-  const full = "https://i.postimg.cc/7hBpJVf9/11-(1).png";
-  const empty = "https://i.postimg.cc/xCQrw8wR/17.png";
+        const widget = `
+<div style="display: table; margin: 0 auto; padding: 15px 25px; background: rgba(0,0,0,0.8); border: 3px solid ${clr}; border-radius: 50px; box-shadow: 0 0 20px ${clr}; text-align: center;">
+    <div style="display: inline-block; vertical-align: middle;">${icons}</div>
+    <span style="display: inline-block; vertical-align: middle; margin-left: 20px; font-family: Arial, sans-serif; font-size: 24px; font-weight: bold; color: ${clr}; text-shadow: 0 0 10px ${clr};">${val} / 5</span>
+</div>`.trim();
 
-  let html = '';
-
-  for(let i=0;i<total;i++){
-    if(i<filled){
-      html += `<img src="${full}" width="${size}" style="${glow ? 'filter:drop-shadow(0 0 15px ' + color + ');' : ''} margin-right:6px;">`;
-    } else {
-      html += `<img src="${empty}" width="${size}" style="margin-right:6px;">`;
+        document.getElementById('prev').innerHTML = widget;
+        document.getElementById('res').value = widget;
     }
-  }
-
-  html += `<span style="font-size:20px; font-weight:bold; color:${color}; text-shadow:0 0 10px ${color}; margin-left:10px;">
-    ${filled} / ${total}</span>`;
-
-  document.getElementById('preview').innerHTML = html;
-  document.getElementById('out').value = html;
-}
-
-function copyCode(){
-  const out = document.getElementById('out');
-  out.select();
-  document.execCommand('copy');
-  alert("Код скопирован и готов для Genially!");
-}
-
-gen();
+    
+    function copy() {
+        document.getElementById('res').select();
+        document.execCommand('copy');
+        alert("Код скопирован!");
+    }
+    gen();
 </script>
-
 </body>
 </html>
